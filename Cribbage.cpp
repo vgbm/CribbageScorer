@@ -57,20 +57,57 @@ int scoreHand(card hand[]){
 card HAND[HAND_LEN];
 int main(void){
   
-  bestHand(100000000);
-
-//   HAND[0].value = king; HAND[0].suit = club;
-//   HAND[1].value = king; HAND[1].suit = club;
-//   HAND[2].value = king; HAND[2].suit = club;
-//   HAND[3].value = king; HAND[3].suit = club;
-//   HAND[4].value = king; HAND[4].suit = club;
-//   incHand();
-//   for(int i = 0; i < HAND_LEN; i++){
-//     cout<<"Value:: "<<HAND[i].value<<" Suit::"<<HAND[i].suit<<endl;
-//   }
-//   cout<<scoreHand(HAND)<<endl;
-//    cout<<"\nFlush Score::"<<scoreFlush(HAND)<<" Pair Score:: "<<pairScore(convToSortedVect(HAND))<<
-//   " Straight score:: "<<straightScore(convToSortedVect(HAND))<<" fifteenScore:: "<<fifteenScore(HAND)<<endl;
+  char response, suit;
+  int limit, cardVal;
+  
+  cout<<"Calculate your scores or find the best score by limit? (a/b)"<<endl;
+  cin>>response;
+  
+  if(response=='b'){
+   cout<<"What limit? (All is about 100000000)"<<endl;
+   cin>>limit;
+   bestHand(limit);
+  }
+  else{
+   
+    do{
+      
+      for(int i=0;i<HAND_LEN;i++){
+	
+	cout<<"Card["<<i<<"] Value (A=1 / J = 11 ..):: ";
+	cin>>cardVal;
+	cout<<"Card["<<i<<"] Suit (h/d/s/c):: ";
+	cin>>suit;
+	
+	HAND[i].value = (VALUE)cardVal;
+	switch(suit){
+	 
+	  case 'h': HAND[i].suit = heart;
+		    break;
+	  case 'd': HAND[i].suit = diamond;
+		    break;
+	  case 's': HAND[i].suit = spade;
+		    break;
+	  default:
+		    HAND[i].suit = club;
+		    break;
+	}
+      }
+      
+      for(int i = 0; i < HAND_LEN; i++){
+	cout<<"Value:: "<<HAND[i].value<<" Suit::"<<HAND[i].suit<<endl;
+      }
+      
+      cout<<"\nThis hand scores a "<<scoreHand(HAND)<<endl;
+      cout<<"Flush Score::"<<scoreFlush(HAND)<<" Pair Score:: "<<pairScore(convToSortedVect(HAND))<<
+      " Straight score:: "<<straightScore(convToSortedVect(HAND))<<" fifteenScore:: "<<fifteenScore(HAND)<<endl;
+      
+      cout<<"Any key to continue... Press '~' to break"<<endl;
+      cin>>response;
+    }while(response!='~');
+    
+  }
+ 
   return 0;  
 }
 
@@ -168,7 +205,7 @@ int scoreFlush(card hand[]){
     if(hand[i].suit != flushSuit)
       return 0;
   }
-  return 4;
+  return hand[HAND_LEN-1].suit==flushSuit?5:4;
 }
 
 
