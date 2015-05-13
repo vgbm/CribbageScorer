@@ -6,8 +6,8 @@
 using namespace std;
 
 #define HAND_LEN 5
-enum SUIT {heart=0,diamond,spade,club};
-enum VALUE {ace=1,two,three,four,five,six,seven,eight,nine,ten,jack=11,queen,king};
+enum SUIT {heart=0,diamond,spade,club, no_suit=-100};
+enum VALUE {ace=1,two,three,four,five,six,seven,eight,nine,ten,jack=11,queen,king, no_value=-100};
 
 struct card{
   VALUE value;
@@ -16,6 +16,7 @@ struct card{
 } myCard;
 
 void bestHand(int);
+void discard(card [],int);
 void incHand();
 card incCard(card);
 int scoreFlush(card []);
@@ -60,13 +61,54 @@ int main(void){
   char response, suit;
   int limit, cardVal;
   
-  cout<<"Calculate your scores or find the best score by limit? (a/b)"<<endl;
+  cout<<"Calculate your scores, choose what to keep, or find the best score by limit? (a/b/c)"<<endl;
   cin>>response;
   
-  if(response=='b'){
+  if(response=='c'){
    cout<<"What limit? (All is about 100000000)"<<endl;
    cin>>limit;
    bestHand(limit);
+  }
+  else if(response=='b'){
+     
+    cout<<"How many cards are in your hand?"<<endl;
+    cin>>limit; //repurposed for length
+    card discardHand[limit];  
+    
+    do{
+	for(int i=0;i<limit;i++){
+	  
+	  cout<<"Card["<<i<<"] Value (A=1 / J = 11 ..):: ";
+	  cin>>cardVal;
+	  cout<<"Card["<<i<<"] Suit (h/d/s/c):: ";
+	  cin>>suit;
+	  
+	  discardHand[i].value = (VALUE)cardVal;
+	  switch(suit){
+	  
+	    case 'h': discardHand[i].suit = heart;
+		      break;
+	    case 'd': discardHand[i].suit = diamond;
+		      break;
+	    case 's': discardHand[i].suit = spade;
+		      break;
+	    default:
+		      discardHand[i].suit = club;
+		      break;
+	  }
+	}
+	
+	for(int i = 0; i < limit; i++){
+	  cout<<"\nValue:: "<<discardHand[i].value<<" Suit::"<<discardHand[i].suit<<endl;
+	}
+	
+	discard(discardHand,limit);
+	
+	cout<<"Any key to continue... Press '~' to break"<<endl;
+	cin>>response;
+	
+    } while(response!='~');
+    
   }
   else{
    
@@ -95,7 +137,7 @@ int main(void){
       }
       
       for(int i = 0; i < HAND_LEN; i++){
-	cout<<"Value:: "<<HAND[i].value<<" Suit::"<<HAND[i].suit<<endl;
+	cout<<"\nValue:: "<<HAND[i].value<<" Suit::"<<HAND[i].suit<<endl;
       }
       
       cout<<"\nThis hand scores a "<<scoreHand(HAND)<<endl;
@@ -112,6 +154,44 @@ int main(void){
 }
 
 
+void discard(card discardHand[], int length){
+ 
+  int score=0, bestScore=0;
+  card bestHand[HAND_LEN];
+  
+  for(int i = 0; i < length;i++){
+    for(int j = i+1; j < length; j++){
+      for(int k = j+1; k < length; k++){
+	for(int l = k+1; l < length; l++){
+	 
+	  if(nonEqual(i,j,k,l)){
+	    
+	    HAND[0] = discardHand[i];
+	    HAND[1] = discardHand[j];
+	    HAND[2] = discardHand[k];
+	    HAND[3] = discardHand[l];
+	    HAND[4].value = no_value; HAND[4].suit=no_suit;
+	    
+	    score = scoreHand(HAND);
+	    if(score>bestScore){
+	      bestScore=score;
+	      memcpy(bestHand,HAND,sizeof(HAND));
+	    }
+	  }
+	}  
+      }
+    }
+  }
+  
+  cout<<"\nBest hand attained::"<<endl;
+  for(int i = 0; i < HAND_LEN-1; i++){
+    cout<<"Value:: "<<bestHand[i].value<<" Suit::"<<HAND[i].suit<<endl;
+  }
+  cout<<scoreHand(bestHand)<<"\nFlush Score::"<<scoreFlush(bestHand)<<" Pair Score:: "<<pairScore(convToSortedVect(bestHand))<<
+  " Straight score:: "<<straightScore(convToSortedVect(bestHand))<<" fifteenScore:: "<<fifteenScore(bestHand)<<endl;
+}  
+  
+  
 void bestHand(int runs){
   
   int score=0, bestScore=0;
@@ -137,7 +217,7 @@ void bestHand(int runs){
     currRun++;
   }
   
-  cout<<"Max hand attained::"<<endl;
+  cout<<"\nMax hand attained::"<<endl;
   for(int i = 0; i < HAND_LEN; i++){
     cout<<"Value:: "<<HAND[i].value<<" Suit::"<<HAND[i].suit<<endl;
   }
@@ -269,6 +349,13 @@ int fifteenScore(card hand[]){
 	tempHand[i].value=ten;
       else
 	tempHand[i].value = hand[i].value;
+  }
+  
+  for(int i=0;i<HAND_LEN;i++){ //mild optimization
+   if(tempHand[i].value<eight)
+     break;
+   else if(i==HAND_LEN-1)
+     return 0;
   }
   
   //two cards
